@@ -1,0 +1,21 @@
+from bs4 import BeautifulSoup
+from datetime import datetime
+import requests
+
+#Request library is requesting library from a specific website like a real person
+html_text = requests.get('https://utah.peopleadmin.com/postings/search?utf8=%E2%9C%93&query=computer&query_v0_posted_at_date=&764=&504=&1179=&565=&commit=Search').text
+#lxml is used to parse the data
+soup = BeautifulSoup(html_text, 'lxml')
+jobs = soup.find_all('div', class_ = 'job-item job-item-posting')
+for job in jobs:
+    published_date = job.find_all('div', class_ = 'col-md-2 col-xs-12 job-title job-title-text-wrap col-md-push-2')[-1].text.replace(' ','')
+    title_name = job.find('h3').text.replace('','')
+    skills = job.find('span', class_= 'job-description').text.replace('\t','')
+    
+
+    print(f'''
+    Position: {title_name}
+    Description: {skills}
+    Date Posted: {published_date}
+    ''')
+    print('************************************************')

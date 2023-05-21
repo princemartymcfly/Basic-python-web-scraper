@@ -1,0 +1,40 @@
+from bs4 import BeautifulSoup
+from datetime import datetime
+import requests
+import time
+
+print("Input a skill that you are not familiar with: ")
+unfamiliar_skill = input('>')
+print(f'Filtering out {unfamiliar_skill}')
+
+
+def find_jobs():
+    job_count =0 
+    #Request library is requesting library from a specific website like a real person
+    html_text = requests.get('https://utah.peopleadmin.com/postings/search?utf8=%E2%9C%93&query=computer&query_v0_posted_at_date=&764=&504=&1179=&565=&commit=Search').text
+    #lxml is used to parse the data
+    soup = BeautifulSoup(html_text, 'lxml')
+    jobs = soup.find_all('div', class_ = 'job-item job-item-posting')
+    for index, job in enumerate(jobs):
+        published_date = job.find_all('div', class_ = 'col-md-2 col-xs-12 job-title job-title-text-wrap col-md-push-2')[-1].text.replace(' ','')
+        title_name = job.find('h3').text.replace('','')
+        link_header = 'https://utah.peopleadmin.com'
+        link=link_header + job.find('div',class_='details').find('span', class_='job-actions').find('a', class_='btn primary_button_color')['href']
+        descrip = job.find('span', class_= 'job-description').text.replace('\t','')
+        if unfamiliar_skill not in descrip:
+            job_count+=1
+            with open(f'posts/{index}.txt', 'w') as f:
+                f.write(f'Title:  {title_name.strip()} \n')
+                f.write(f'Job description: {descrip.strip()} \n')
+                f.write(f'Link: {link} \n')
+            print(f'File saved: {index}')
+            
+
+    print(f'Total job count: {job_count}')
+
+if __name__ == '__main__':
+    while True:
+        find_jobs()
+        time_wait = 10
+        print(f'Waiting {time_wait} minutes')
+        time.sleep(time_wait*60)
